@@ -19,18 +19,18 @@ contract EventContract {
         string _description;
         uint256 _startDate;
         uint256 _endDate;
-        EventType _type;
+        EventType _type;        
+        uint256 _ticketPrice;
         uint32 _expectedGuestCount;
         uint32 _registeredGuestCount;
         uint32 _verifiedGuestCount;
         address _organizer;
         address _ticketAddress;
-        uint256 _ticketPrice;
     }
 
     uint256 public event_count;
-    mapping(uint256 => EventDetails) events;
-    mapping(address => mapping(uint256 => bool)) hasRegistered;
+    mapping(uint256 => EventDetails) public events;
+    mapping(address => mapping(uint256 => bool)) public hasRegistered;
 
     // write functions
     // create event
@@ -40,8 +40,8 @@ contract EventContract {
         uint256 _startDate,
         uint256 _endDate,
         EventType _type,
-        uint32 _egc,    
-        uint256 _ticketPrice
+        uint256 _ticketPrice,
+        uint32 _egc  
     ) external {
 
         uint256 _eventId = event_count + 1;
@@ -56,24 +56,21 @@ contract EventContract {
 
 
         // Change??
-        EventDetails memory _updatedEvent = EventDetails ({
+        events[_eventId] = EventDetails ({
             _title: _title,
             _description: _desc,
             _startDate: _startDate,
             _endDate: _endDate,
             _type: _type,
+            _ticketPrice: _ticketPrice,
             _expectedGuestCount: _egc,
             _registeredGuestCount: 0,
             _verifiedGuestCount: 0,
             _organizer: msg.sender,
-            _ticketAddress: address(0),
-            _ticketPrice: _ticketPrice
+            _ticketAddress: address(0)
         });
 
-        events[_eventId] = _updatedEvent;
-
         event_count = _eventId;
-
         emit EventCreated(_eventId, msg.sender);
     }
 
@@ -95,19 +92,17 @@ contract EventContract {
 
         if (_eventInstance._type == EventType.paid) {
             require(msg.value >= _eventInstance._ticketPrice, "INSUFFICIENT FUNDS");
-
+            //Implement funds transfer of funds to contract after creating withdrawal function for organizer
             payable(_eventInstance._organizer).transfer(msg.value);
             _eventInstance._registeredGuestCount++;
-            hasRegistered[msg.sender][_eventId] = true;
         }     
     
         else {
             // update registered event guest count
-            _eventInstance._registeredGuestCount++;
-            
-            // updated has reg struct
-            hasRegistered[msg.sender][_eventId] = true;
+            _eventInstance._registeredGuestCount++;          
         }
+        // updated has reg struct
+        hasRegistered[msg.sender][_eventId] = true;
         // updated has events mapping
         events[_eventId] = _eventInstance;
         emit TicketPurchased(_eventId, msg.sender);

@@ -5,7 +5,15 @@ require('dotenv').config()
 const { ALCHEMY_BASE_SEPOLIA_API_KEY_URL, ACCOUNT_PRIVATE_KEY, BASESCAN_API_KEY } = process.env;
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.28",
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
   networks: {
     base_sepolia: {
       url: ALCHEMY_BASE_SEPOLIA_API_KEY_URL,
