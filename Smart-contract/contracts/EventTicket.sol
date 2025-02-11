@@ -4,10 +4,7 @@ pragma solidity 0.8.28;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/**
- * @title EventTicket
- * @dev ERC721 contract for event ticketing, where each ticket is uniquely linked to an event.
- */
+
 contract EventTicket is ERC721Enumerable, Ownable {
     uint256 private _ticketCounter; // Counter to track ticket IDs
     address public eventContract; // Address of the event contract
@@ -20,7 +17,6 @@ contract EventTicket is ERC721Enumerable, Ownable {
     {
         eventContract = _eventContract;
     }
-
     
     function mint(address _recipient, uint256 _eventId) external {
         require(msg.sender == eventContract, "Only event contract can mint tickets");
@@ -28,7 +24,7 @@ contract EventTicket is ERC721Enumerable, Ownable {
         _safeMint(_recipient, _ticketCounter);
         ticketEventMapping[_ticketCounter] = _eventId;
     }
-
+         
     function getTokensByAddress(address _owner) external view returns (uint256[] memory) {
         uint256 tokenCount = balanceOf(_owner);
         require(tokenCount > 0, "No tickets owned by this address");
@@ -40,6 +36,7 @@ contract EventTicket is ERC721Enumerable, Ownable {
         return tokenIds;
     }
 
+    
     function getTokenForEvent(address _owner, uint256 _eventId) external view returns (uint256) {
         uint256 tokenCount = balanceOf(_owner);
         require(tokenCount > 0, "No tickets owned by this address");
@@ -52,9 +49,10 @@ contract EventTicket is ERC721Enumerable, Ownable {
         }
         revert("No ticket found for this event");
     }
-
-    function validateTicket(uint256 _tokenId, uint256 _eventId) external {
+    
+    function validateTicket(uint256 _tokenId, uint256 _eventId) external view returns (bool){
         require(ownerOf(_tokenId) != address(0), "Invalid ticket");
         require(ticketEventMapping[_tokenId] == _eventId, "Ticket does not match event");
+        return true;
     }
 }
