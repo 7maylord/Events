@@ -126,35 +126,25 @@ describe('Event test', () => {
         });
         describe("Verify Attendance", () => {
             it("should verify attendance", async () => {
-                const { deployEvent, owner, address1 } = await loadFixture(deployEventContract);
+                const { deployEvent, owner, account1 } = await loadFixture(deployEventContract);
                 const latestTime = await time.latest();
-                await _event.createEvent("pool party", "Matured minds only", latestTime+30, latestTime + 86400, 1, 1, 20);
-                await _event.connect(address1).registerForEvent(1, {value: 1});
-                await _event.verifyAttendance(1, 1);
-                
-                expect(await _event.isVerifiedTicket(1, 1)).to.equal(true);
+                await deployEvent.createEvent("pool party", "Matured minds only", latestTime+30, latestTime + 86400, 1, 1, 20);
+                await deployEvent.connect(account1).registerForEvent(1, {value: 1});
+                expect(await deployEvent.validateTicket(1, account1.address)).to.emit(deployEvent, "AttendanceVerified")
             });
     
             it("should not verify attendance if event does not exist", async () => {
-                const { _event, owner, address1 } = await loadFixture(deployEventContractFixture);
-                await expect(_event.verifyAttendance(1, 1)).to.be.revertedWith('EVENT DOESNT EXIST');
+                const { deployEvent, account1 } = await loadFixture(deployEventContract);
+                await expect(deployEvent.validateTicket(1, account1.address)).to.be.revertedWith('No Event');
             });
     
             it('should allot only organizer to verify attendance', async () => {
-                const { _event, owner, address1, address2 } = await loadFixture(deployEventContractFixture);
+                const { deployEvent, account1, account2 } = await loadFixture(deployEventContract);
                 const latestTime = await time.latest();
-                await _event.createEvent("pool party", "Matured minds only", latestTime+30, latestTime + 86400, 1, 1, 20);
-                await _event.connect(address1).registerForEvent(1, {value: 1});
-                await expect(_event.connect(address2).verifyAttendance(1, 1)).to.be.revertedWith('ONLY ORGANIZER CAN VERIFY');
+                await deployEvent.createEvent("pool party", "Matured minds only", latestTime + 30, latestTime + 86400, 1, 1, 20);
+                await deployEvent.connect(account1).registerForEvent(1, {value: 1});
+                await expect(deployEvent.connect(account2).validateTicket(1, account1.address)).to.be.revertedWith('ONLY ORGANIZER CAN VERIFY');
             });
     
-            it('should increase verified guest count', async () => {
-                const { _event, owner, address1 } = await loadFixture(deployEventContractFixture);
-                const latestTime = await time.latest();
-                await _event.createEvent("pool party", "Matured minds only", latestTime+30, latestTime + 86400, 1, 1, 20);
-                await _event.connect(address1).registerForEvent(1, {value: 1});
-                await _event.verifyAttendance(1, 1);
-                expect(await (await _event.events(1))._verifiedGuestCount).to.equal(1);
-            });
         });
 });

@@ -1,23 +1,41 @@
-import {ethers} from "hardhat";
-
+import { ethers } from "hardhat";
 
 async function createEvent() {
-    const _event = await ethers.getContractAt("EventContract", "0xF8fbAFAEd2eD40DDC497443B7912c965c8A58b66");
-    console.log(_event);
-    const block = await ethers.provider.getBlock("latest");
-    const time = block?.timestamp;
-    const latestTime = await time;
-    const receipt = await _event.createEvent("pool party", "Matured minds only", latestTime? + 30, latestTime? + 86400, ethers.parseUnits("0.00000001", 18), 1, 20);
-    const _eventCount = await _event.event_count();
-    const _eventInstance = await _event.events(_eventCount);
+  // Connect to the deployed contract
+  const eventContract = await ethers.getContractAt(
+    "EventContract",
+    "0x69A372b290322E336eFd85B5Fa52c6a16792DD1c"
+  );
 
-    console.log("RECEIPT", receipt)
-    console.log("EVENT INSTANCE", _eventInstance)
+  // Get the latest block timestamp
+  const block = await ethers.provider.getBlock("latest");
+  const latestTime = block?.timestamp || Math.floor(Date.now() / 1000); 
 
-} 
+  // Define event details
+  const title = "Pool Party";
+  const description = "For Matured Minds";
+  const startDate = latestTime + 30;
+  const endDate = latestTime + 86400;
+  const eventType = 1; // Paid event
+  const ticketPrice = ethers.parseUnits("0.00000001", 18); // 0.00000001 ETH
+  const expectedGuestCount = 100;
 
+  // Call createEvent function
+  const event = await eventContract.createEvent(
+    title,
+    description,
+    startDate,
+    endDate,
+    eventType,
+    ticketPrice,
+    expectedGuestCount
+  );
+  await event.wait();
+
+  console.log("Event created successfully at:", event.hash);
+}
 
 createEvent().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-})
+  console.error(error);
+  process.exitCode = 1;
+});

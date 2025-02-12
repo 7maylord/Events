@@ -101,7 +101,7 @@ contract EventContract {
             // update registered event guest count
             _eventInstance._registeredGuestCount++;          
         }
-        // updated has reg struct
+        // updated has reg mapping
         hasRegistered[msg.sender][_eventId] = true;
         // updated has events mapping
         events[_eventId] = _eventInstance;
