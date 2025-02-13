@@ -107,28 +107,21 @@ describe('Event test', () => {
             const { deployEvent, account1, account2, account3 } = await loadFixture(deployEventContract);
             const latestTime = await time.latest();
         
-            await deployEvent.createEvent(
-                        "Wedding Vows",
-                        "Exclusive event",
-                        latestTime + 100,
-                        latestTime + 86400,
-                        0,
-                        2,
-                        0
-                    );
+            await deployEvent.createEvent("Wedding Vows", "Exclusive event", latestTime + 100, latestTime + 86400, 0, 2, 0);
         
             await deployEvent.connect(account1).registerForEvent(1);
             await deployEvent.connect(account2).registerForEvent(1);
+            const event = await deployEvent.events(1);
+            console.log("...", event[0])
         
-            await expect(deployEvent.connect(account3).registerForEvent(1))
-                        .to.be.revertedWith('REGISTRATION CLOSED'); 
+            await expect(deployEvent.connect(account3).registerForEvent(1)).to.be.revertedWith('REGISTRATION CLOSED');
             });
         });
         describe("Verify Attendance", () => {
             it("should verify attendance", async () => {
                 const { deployEvent, owner, account1 } = await loadFixture(deployEventContract);
                 const latestTime = await time.latest();
-                await deployEvent.createEvent("pool party", "Matured minds only", latestTime+30, latestTime + 86400, 1, 1, 20);
+                await deployEvent.createEvent("pool party", "Matured minds only", latestTime + 30, latestTime + 86400, 1, 1, 20);
                 await deployEvent.connect(account1).registerForEvent(1, {value: 1});
                 expect(await deployEvent.validateTicket(1, account1.address)).to.emit(deployEvent, "AttendanceVerified")
             });
